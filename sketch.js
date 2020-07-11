@@ -2,7 +2,7 @@
 const   w = h = 512;
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
         isWhiteTurn = true;
-        playerSideWhite = false;
+        playerSideWhite = true;
 
 function preload() {
   // load pieces
@@ -21,7 +21,8 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(w, h);
+  cnv = createCanvas(w, h);
+  cnv.mousePressed(playerMove);
   imageMode(CENTER);
   // two-demencial board array
   arr = [
@@ -54,8 +55,8 @@ function drawBoard() {
   for (i = 0; i < 8; i++) {
     if (i % 2 == 0) fill(222, 227, 230);
     else fill(140, 162, 173);
-    text(playerSideWhite ? letters[i] : letters[7 - i], i * w / 8 + 5, w - 5)
-    text(playerSideWhite ? 8 - i : i + 1, w - 10, i * w / 8 + 15 )
+    text(playerSideWhite ? letters[i] : letters[7 - i], i * w / 8 + 5, w - 5);
+    text(playerSideWhite ? 8 - i : i + 1, w - 10, i * w / 8 + 15 );
   }
 }
 
@@ -78,4 +79,46 @@ function drawPices() {
       }
     }
 }
-1
+
+function playerMove() {
+  x = floor(mouseX * 8 / w);
+  y = floor(mouseY * 8 / w);
+  if (arr[y][x][0] == 'w') {
+    selection = [y, x];
+    console.log(selection);
+  } else {
+    if (isLegal(selection, x, y))
+      makeMove(selection[0], selection[1], y, x);
+    else 
+      selection = [-1, -1];
+  }
+}
+
+function isLegal(selection, x, y) {
+  if (selection[0] == -1) return false;
+  // switch(arr[selection[0]][selection[1]][1]){
+  //   case 'k':
+  //     break;
+  //   case 'b':
+  //     break;
+  //   case 'r':
+  //     break;
+  //   case 'p':
+  //     break;
+  //   case 'q':
+  //     break;
+  //   case 'n':
+  //     break;
+  // }
+  return true;
+}
+
+function isInCheck() {
+
+}
+
+function makeMove(y0, x0, y1, x1) {
+  piece = arr[y0][x0];
+  arr[y0][x0] = '  ';
+  arr[y1][x1] = piece;
+}
