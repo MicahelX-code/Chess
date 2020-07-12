@@ -95,65 +95,109 @@ function playerMove() {
   if ((arr[y][x][0] == 'w' && isWhiteTurn) || (arr[y][x][0] == 'b' && !isWhiteTurn)) {
     selection = [y, x];
   } else {
-    if (isLegal(selection, y, x)) {
+    if (isLegal(selection[0], selection[1], y, x))
       makeMove(selection[0], selection[1], y, x);
-    }
     selection = [-1, -1];
   }
 }
 
-function isLegal(selection, y, x) {
-  if (selection[0] == -1) return false;
-  switch(arr[selection[0]][selection[1]][1]){
-    case 'k': // king
-      return true;
-      break;
-    case 'b': // bishop
-      return true;
-      break;
-    case 'r': // rook
-      return true;
-      break;
+function isLegal(y0, x0, y, x) {
+  if (y0 == -1 || isInCheck(y0, x0, y, x)) return false;
+  switch(arr[y0][x0][1]){
+    // king
+    case 'k':
+      if (abs(y - y0) <= 1 && abs(x - x0) <= 1)
+        return true
+      return false;
+    // bishop
+    case 'b': 
+      if (abs(x - x0) == abs(y - y0)) {
+        ax = x0; bx = x; if (x0 > x) { t = ax; ax = bx; bx = t; }
+        ay = y0; by = y; if (y0 > y) { t = ay; ay = by; by = t; }
+        for (i = ax, j = ay; i < bx, j < by; i++, j++)
+          if (arr[j][i] != '  ' && i != ax && j != ay)
+            return false
+        return true;
+      }
+      return false;
+    // rook
+    case 'r':
+      if (x == x0) {
+        a = y0; b = y; if (y0 > y) { t = a; a = b; b = t; }
+        for (i = a; i < b; i++)
+          if (arr[i][x] != '  ' && i != a)
+            return false;
+        return true;
+      } else if (y == y0) {
+        a = x0; b = x; if (x0 > x) { t = a; a = b; b = t; }
+        for (i = a; i < b; i++)
+          if (arr[y][i] != '  ' && i != a)
+            return false;
+        return true;
+      }
+      return false;
     // pawn
     case 'p':
       // regular move 1 square ahead
-      if ((arr[y][x] == '  ') && (selection[1] == x) &&
-        ((selection[0] - y == 1) && isWhiteTurn || (selection[0] - y == -1) && !isWhiteTurn)) {
+      if ((arr[y][x] == '  ') && (x0 == x) &&
+        ((y0 - y == 1) && isWhiteTurn || (y0 - y == -1) && !isWhiteTurn)) {
           return true;
       // 1st move 2 squares ahead
-      } else if ((arr[y][x] == '  ') && (selection[1] == x) &&
-        ((selection[0] == 6 && isWhiteTurn) || (selection[0] == 1 && !isWhiteTurn)) &&
-        ((selection[0] - y == 2) && isWhiteTurn || (selection[0] - y == -2) && !isWhiteTurn)) {
+      } else if ((arr[y][x] == '  ') && (x0 == x) &&
+        ((y0 == 6 && isWhiteTurn) || (y0 == 1 && !isWhiteTurn)) &&
+        ((y0 - y == 2) && isWhiteTurn || (y0 - y == -2) && !isWhiteTurn)) {
           return true;
       // cupture
       } else if ((arr[y][x][0] == 'b' && isWhiteTurn) || (arr[y][x][0] == 'w' && !isWhiteTurn)) {
-        if ((selection[0] - y == 1 && abs(selection[1] - x) == 1 && isWhiteTurn) ||
-        (selection[0] - y == -1 && abs(selection[1] - x) == 1 && !isWhiteTurn))
+        if ((y0 - y == 1 && abs(x0 - x) == 1 && isWhiteTurn) ||
+        (y0 - y == -1 && abs(x0 - x) == 1 && !isWhiteTurn))
           return true;
       // en peasant
-      
+
       }
-      break;
-    case 'q': // queen
-      return true;
-      break;
-    case 'n': // knight
-      return true;
-      break;
+      return false;
+    // queen
+    case 'q':
+      if (x == x0) {
+        a = y0; b = y; if (y0 > y) { t = a; a = b; b = t; }
+        for (i = a; i < b; i++)
+          if (arr[i][x] != '  ' && i != a)
+            return false;
+        return true;
+      } else if (y == y0) {
+        a = x0; b = x; if (x0 > x) { t = a; a = b; b = t; }
+        for (i = a; i < b; i++)
+          if (arr[y][i] != '  ' && i != a)
+            return false;
+        return true;
+      } else if (abs(x - x0) == abs(y - y0)) {
+        ax = x0; bx = x; if (x0 > x) { t = ax; ax = bx; bx = t; }
+        ay = y0; by = y; if (y0 > y) { t = ay; ay = by; by = t; }
+        for (i = ax, j = ay; i < bx, j < by; i++, j++)
+          if (arr[j][i] != '  ' && i != ax && j != ay)
+            return false
+        return true;
+      }
+      return false;
+    // knight
+    case 'n':
+      if ((abs(x - x0) == 2 && abs(y - y0) == 1) || (abs(x - x0) == 1 && abs(y - y0) == 2)) 
+        return true;
+      return false;
+    // shouldn't ever get here
     default:
       return false;
   }
 }
 
-function isInCheck() {
+function isInCheck(y0, x0, y, x) {
   return false;
 }
 
-function makeMove(y0, x0, y1, x1) {
+function makeMove(y0, x0, y, x) {
   piece = arr[y0][x0];
   arr[y0][x0] = '  ';
-  arr[y1][x1] = piece;
+  arr[y][x] = piece;
   isWhiteTurn = !isWhiteTurn;
-  append(pgn, [[x0, y0], [x1, y1]]);
-  console.log(pgn[pgn.length - 1]);
+  append(pgn, [[x0, y0], [x, y]]);
 }
